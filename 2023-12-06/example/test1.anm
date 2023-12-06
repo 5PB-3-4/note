@@ -1,0 +1,38 @@
+--[[
+  スクリプト使用例その1
+  めちゃくちゃ重いので注意（筆者の環境で処理に5~10秒弱かかりました）
+]]
+
+--check0:goto,0
+tonumber(nil)
+
+local bench = function()
+  local x = 0.5
+  for i=1,1000000000 do
+          x = 1 / (x * (x - 1)) + 4.6
+  end
+  debug_print("x="..x)
+end
+
+
+local isLoad, ret = pcall(require, "socket.core")
+if not isLoad then
+  debug_print([[failed]])
+  debug_print(ret)
+  return
+end
+
+local tstart=ret.gettime()
+if obj.check0 then
+  debug_print("skip!!!")
+  goto exit  -- 実はLuaJITはgoto文を使うことができます
+end
+
+bench()
+::exit::
+
+local tend=ret.gettime()
+debug_print((tend-tstart).."[sec]")
+collectgarbage("collect")
+
+

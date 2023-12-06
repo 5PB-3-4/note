@@ -1,0 +1,64 @@
+--[[
+	スクリプト使用例その2
+	トラックバーの値や画像の大きさを変えたりすると処理の重さを変更できます
+]]
+
+--track0:回数,1,100,1,1
+tonumber(nil)  -- --fileや--colorが空の時の対策
+-------------------------------------------------------------------------------------------
+--計測開始
+-------------------------------------------------------------------------------------------
+local isLoad, ret = pcall(require, "socket.core")
+if not isLoad then 
+	debug_print(ret)
+	return
+end
+
+local tstart = ret.gettime()
+local slider0 = obj.track0
+
+-------------------------------------------------------------------------------------------
+--色をランダムに配置
+-------------------------------------------------------------------------------------------
+local ffi=require("ffi")
+ffi.cdef[[
+typedef struct { uint8_t b,g,r,a; } PixelBGRA;
+]]
+
+local ub,w,h=obj.getpixeldata()
+local cd=ffi.cast("PixelBGRA*",ub)
+
+for i=1,slider0 do
+	for y=0,h-1 do
+		for x=0,w-1 do
+			local p=cd[x+y*w]
+			
+			local r = obj.rand(0,255,math.floor(((x+y*w)+1)/5+i))
+			local g = obj.rand(0,255,math.floor(((x+y*w)+2)/6+i))
+			local b = obj.rand(0,255,math.floor(((x+y*w)+3)/7+i))
+			local a = obj.rand(0,255,math.floor(((x+y*w)+4)/8+i))
+
+			p.b=r
+			p.g=g
+			p.r=b
+			p.a=a
+
+		end
+	end
+end
+obj.putpixeldata(ub)
+
+-------------------------------------------------------------------------------------------
+--メモリを開けるために変数にnilを詰めてガベージコレクションを行う
+-------------------------------------------------------------------------------------------
+slider0=nil
+slider1=nil
+
+ffi=nil
+ub,w,h=nil,nil,nil
+cd=nil
+
+debug_print(ret.gettime()-tstart.."[sec]")
+debug_print("used memory by lua = "..string.format("%4.3f",collectgarbage("count")).." kbyte")
+collectgarbage("collect")
+
